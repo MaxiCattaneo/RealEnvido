@@ -52,7 +52,7 @@
         position: relative;
         width: 100%;
         height: 0;
-        padding-bottom: 62.5%; /* Proporción 8:5 */
+        padding-bottom: 62.5%;
         background: repeating-linear-gradient(
             90deg,
             #2e7d32 0px,
@@ -228,7 +228,6 @@
             <div class="area top"></div>
             <div class="area bottom"></div>
             <div class="contador" id="contador">0/8</div>
-            <!-- Jugadores se agregarán aquí -->
         </div>
         <div class="contenedor-boton">
             <button class="boton-reinicio" id="botonReinicio">Reiniciar Equipo</button>
@@ -251,7 +250,6 @@
     let offsetX = 0, offsetY = 0;
     let isTouchDevice = false;
 
-    // Inicializar
     function init() {
         isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         renderListaJugadores();
@@ -279,86 +277,56 @@
             if (enCancha) div.classList.add("en-cancha");
             div.dataset.nombre = nombre;
             div.textContent = nombre;
-            
             div.addEventListener("click", () => agregarJugadorACancha(nombre));
-            
             listaJugadores.appendChild(div);
         });
     }
 
     function encontrarPosicionLibre() {
         const posicionesIniciales = [
-            {x: 50, y: 90},    // Arquero
-            {x: 30, y: 70},     // Defensa 1
-            {x: 70, y: 70},     // Defensa 2
-            {x: 15, y: 50},     // Medio 1
-            {x: 50, y: 50},     // Medio 2
-            {x: 85, y: 50},     // Medio 3
-            {x: 30, y: 30},     // Delantero 1
-            {x: 70, y: 30}      // Delantero 2
+            {x: 50, y: 90}, {x: 30, y: 70}, {x: 70, y: 70},
+            {x: 15, y: 50}, {x: 50, y: 50}, {x: 85, y: 50},
+            {x: 30, y: 30}, {x: 70, y: 30}
         ];
 
-        // Primero intentar con las posiciones iniciales
         for (let i = 0; i < posicionesIniciales.length; i++) {
             const pos = posicionesIniciales[i];
-            if (i >= jugadoresEnCancha.length) {
-                return pos; // Posición inicial disponible
-            }
+            if (i >= jugadoresEnCancha.length) return pos;
             
-            // Verificar si la posición inicial está ocupada
-            const posicionOcupada = jugadoresEnCancha.some(j => {
-                return Math.abs(j.x - pos.x) < 10 && Math.abs(j.y - pos.y) < 10;
-            });
-            
-            if (!posicionOcupada) {
-                return pos;
-            }
+            const posicionOcupada = jugadoresEnCancha.some(j => 
+                Math.abs(j.x - pos.x) < 10 && Math.abs(j.y - pos.y) < 10
+            );
+            if (!posicionOcupada) return pos;
         }
 
-        // Si todas las posiciones iniciales están ocupadas, buscar una aleatoria
         let intentos = 0;
-        const maxIntentos = 50;
-        
-        while (intentos < maxIntentos) {
-            const x = 10 + Math.random() * 80; // Entre 10% y 90%
-            const y = 10 + Math.random() * 80; // Entre 10% y 90%
+        while (intentos < 50) {
+            const x = 10 + Math.random() * 80;
+            const y = 10 + Math.random() * 80;
             
-            const posicionOcupada = jugadoresEnCancha.some(j => {
-                return Math.abs(j.x - x) < 10 && Math.abs(j.y - y) < 10;
-            });
+            const posicionOcupada = jugadoresEnCancha.some(j => 
+                Math.abs(j.x - x) < 10 && Math.abs(j.y - y) < 10
+            );
             
-            if (!posicionOcupada) {
-                return {x: x, y: y};
-            }
-            
+            if (!posicionOcupada) return {x, y};
             intentos++;
         }
         
-        // Si no se encontró posición libre después de varios intentos, poner en el centro
         return {x: 50, y: 50};
     }
 
     function agregarJugadorACancha(nombre) {
-        if (jugadoresEnCancha.length >= 8) {
-            alert("Máximo 8 jugadores en cancha");
-            return;
-        }
+        if (jugadoresEnCancha.length >= 8) return alert("Máximo 8 jugadores en cancha");
+        if (jugadoresEnCancha.some(j => j.nombre === nombre)) return;
 
-        if (jugadoresEnCancha.some(j => j.nombre === nombre)) {
-            return;
-        }
-
-        // Encontrar posición libre
         const posicion = encontrarPosicionLibre();
-
-        const jugador = {
+        jugadoresEnCancha.push({
             nombre: nombre,
             x: posicion.x,
             y: posicion.y,
             elemento: null
-        };
+        });
 
-        jugadoresEnCancha.push(jugador);
         renderCancha();
         renderListaJugadores();
         actualizarContador();
@@ -378,37 +346,18 @@
                 <div class="nombre">${jugador.nombre}</div>
             `;
             
-            // Guardar referencia al elemento
             jugador.elemento = elemento;
-            
-            // Eventos para PC
-            elemento.addEventListener("mousedown", (e) => {
-                e.preventDefault();
-                startDragPC(e, jugador);
-            });
-            
-            // Eventos para móvil
-            elemento.addEventListener("touchstart", (e) => {
-                e.preventDefault();
-                startDragMobile(e, jugador);
-            }, {passive: false});
-            
+            elemento.addEventListener("mousedown", (e) => startDragPC(e, jugador));
+            elemento.addEventListener("touchstart", (e) => startDragMobile(e, jugador), {passive: false});
             cancha.appendChild(elemento);
         });
     }
 
-    /***********************
-     * FUNCIONES PARA PC *
-     ***********************/
     function startDragPC(e, jugador) {
         jugadorSeleccionado = jugador;
-        const elemento = jugador.elemento;
-        const rect = elemento.getBoundingClientRect();
-        
-        // Calcular offset correctamente para PC
+        const rect = jugador.elemento.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
-        
         document.addEventListener("mousemove", moveDragPC);
         document.addEventListener("mouseup", stopDragPC);
     }
@@ -420,17 +369,12 @@
         const x = ((e.clientX - canchaRect.left - offsetX + 20) / canchaRect.width) * 100;
         const y = ((e.clientY - canchaRect.top - offsetY + 20) / canchaRect.height) * 100;
         
-        // Limitar movimiento dentro de la cancha
-        const newX = Math.max(3, Math.min(x, 97));
-        const newY = Math.max(3, Math.min(y, 97));
+        jugadorSeleccionado.x = Math.max(3, Math.min(x, 97));
+        jugadorSeleccionado.y = Math.max(3, Math.min(y, 97));
         
-        jugadorSeleccionado.x = newX;
-        jugadorSeleccionado.y = newY;
-        
-        // Actualizar posición visual inmediatamente
         if (jugadorSeleccionado.elemento) {
-            jugadorSeleccionado.elemento.style.left = `${newX}%`;
-            jugadorSeleccionado.elemento.style.top = `${newY}%`;
+            jugadorSeleccionado.elemento.style.left = `${jugadorSeleccionado.x}%`;
+            jugadorSeleccionado.elemento.style.top = `${jugadorSeleccionado.y}%`;
         }
     }
 
@@ -440,18 +384,12 @@
         jugadorSeleccionado = null;
     }
 
-    /***************************
-     * FUNCIONES PARA MÓVIL *
-     ***************************/
     function startDragMobile(e, jugador) {
         jugadorSeleccionado = jugador;
         const canchaRect = cancha.getBoundingClientRect();
         const touch = e.touches[0];
-        
-        // Calcular offset para móvil
         offsetX = touch.clientX - canchaRect.left - (jugador.x / 100 * canchaRect.width);
         offsetY = touch.clientY - canchaRect.top - (jugador.y / 100 * canchaRect.height);
-        
         document.addEventListener("touchmove", moveDragMobile, {passive: false});
         document.addEventListener("touchend", stopDragMobile);
     }
@@ -462,20 +400,16 @@
         
         const canchaRect = cancha.getBoundingClientRect();
         const touch = e.touches[0];
-        
-        let x = ((touch.clientX - canchaRect.left - offsetX) / canchaRect.width) * 100;
-        let y = ((touch.clientY - canchaRect.top - offsetY) / canchaRect.height) * 100;
-        
-        // Limitar movimiento dentro de la cancha
-        x = Math.max(3, Math.min(x, 97));
-        y = Math.max(3, Math.min(y, 97));
-        
-        jugadorSeleccionado.x = x;
-        jugadorSeleccionado.y = y;
+        jugadorSeleccionado.x = Math.max(3, Math.min(
+            ((touch.clientX - canchaRect.left - offsetX) / canchaRect.width) * 100, 97
+        ));
+        jugadorSeleccionado.y = Math.max(3, Math.min(
+            ((touch.clientY - canchaRect.top - offsetY) / canchaRect.height) * 100, 97
+        ));
         
         if (jugadorSeleccionado.elemento) {
-            jugadorSeleccionado.elemento.style.left = `${x}%`;
-            jugadorSeleccionado.elemento.style.top = `${y}%`;
+            jugadorSeleccionado.elemento.style.left = `${jugadorSeleccionado.x}%`;
+            jugadorSeleccionado.elemento.style.top = `${jugadorSeleccionado.y}%`;
         }
     }
 
@@ -493,33 +427,25 @@
     }
 
     function setupEventListeners() {
-        // Botón de reinicio
         botonReinicio.addEventListener("click", reiniciarEquipo);
 
-        // Para PC - doble click
         cancha.addEventListener("dblclick", (e) => {
             const jugadorElement = e.target.closest(".jugador");
-            if (jugadorElement) {
-                const nombre = jugadorElement.dataset.nombre;
-                quitarJugadorDeCancha(nombre);
-            }
+            if (jugadorElement) quitarJugadorDeCancha(jugadorElement.dataset.nombre);
         });
 
-        // Para móvil - doble tap
-        let lastTap = 0;
-        let lastTapElement = null;
+        let lastTap = 0, lastTapElement = null;
         cancha.addEventListener("touchstart", (e) => {
             if (e.touches.length === 1) {
                 const currentTime = Date.now();
-                const tapLength = currentTime - lastTap;
                 const jugadorElement = document.elementFromPoint(
                     e.touches[0].clientX, 
                     e.touches[0].clientY
                 )?.closest(".jugador");
                 
-                if (jugadorElement && jugadorElement === lastTapElement && tapLength < 300) {
-                    const nombre = jugadorElement.dataset.nombre;
-                    quitarJugadorDeCancha(nombre);
+                if (jugadorElement && jugadorElement === lastTapElement && 
+                    (currentTime - lastTap) < 300) {
+                    quitarJugadorDeCancha(jugadorElement.dataset.nombre);
                     e.preventDefault();
                 }
                 
@@ -531,6 +457,5 @@
 
     init();
 </script>
-
 </body>
 </html>
