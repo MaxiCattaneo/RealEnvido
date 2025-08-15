@@ -31,7 +31,7 @@
         align-items: center;
         width: 100%;
         max-width: 1200px;
-        gap: 20px;
+        gap: 15px;
     }
 
     @media (min-width: 768px) {
@@ -39,6 +39,7 @@
             flex-direction: row;
             align-items: flex-start;
             justify-content: center;
+            gap: 20px;
         }
     }
 
@@ -47,12 +48,12 @@
         max-width: 800px;
     }
 
-    /* Cancha */
+    /* Cancha - Versión Móvil Mejorada */
     .cancha {
         position: relative;
         width: 100%;
         height: 0;
-        padding-bottom: 62.5%;
+        padding-bottom: 100%; /* Más alta que ancha en móvil */
         background: repeating-linear-gradient(
             90deg,
             #2e7d32 0px,
@@ -63,6 +64,14 @@
         border: 5px solid white;
         border-radius: 10px;
         overflow: hidden;
+        margin: 0 auto;
+    }
+
+    /* Versión de escritorio */
+    @media (min-width: 768px) {
+        .cancha {
+            padding-bottom: 62.5%; /* Proporción 8:5 en desktop */
+        }
     }
 
     /* Elementos de la cancha */
@@ -80,30 +89,45 @@
         transform: translateY(-50%);
     }
 
-    /* Círculo central */
+    /* Círculo central - Más grande en móvil */
     .circulo {
         top: 50%;
         left: 50%;
-        width: 15%;
-        height: 24%;
+        width: 20%; /* Aumentado para móvil */
+        height: 20%;
         border: 2px solid white;
         border-radius: 50%;
         transform: translate(-50%, -50%);
         pointer-events: none;
     }
 
-    /* Área grande */
+    @media (min-width: 768px) {
+        .circulo {
+            width: 15%; /* Tamaño original en desktop */
+            height: 24%;
+        }
+    }
+
+    /* Área grande - Ajustada para móvil */
     .area {
-        width: 31.25%;
-        height: 24%;
+        width: 40%; /* Más ancha en móvil */
+        height: 18%;
         border: 2px solid white;
         left: 50%;
         transform: translateX(-50%);
     }
+
+    @media (min-width: 768px) {
+        .area {
+            width: 31.25%;
+            height: 24%;
+        }
+    }
+    
     .area.top { top: 0; }
     .area.bottom { bottom: 0; }
 
-    /* Jugador en cancha */
+    /* Jugador en cancha - Tamaño aumentado para móvil */
     .jugador {
         position: absolute;
         text-align: center;
@@ -115,8 +139,8 @@
     }
 
     .jugador .icono {
-        width: 40px;
-        height: 40px;
+        width: 50px; /* Más grande en móvil */
+        height: 50px;
         background-color: white;
         border-radius: 50%;
         border: 2px solid black;
@@ -124,23 +148,35 @@
     }
 
     .jugador .nombre {
-        margin-top: 2px;
-        font-size: 12px;
+        margin-top: 4px;
+        font-size: 14px; /* Texto más legible */
         color: white;
         text-shadow: 1px 1px 2px black;
         white-space: nowrap;
     }
 
-    /* Lista de jugadores */
+    @media (min-width: 768px) {
+        .jugador .icono {
+            width: 40px; /* Tamaño original en desktop */
+            height: 40px;
+        }
+        .jugador .nombre {
+            font-size: 12px;
+        }
+    }
+
+    /* Lista de jugadores - Optimizada para móvil */
     .lista-jugadores {
         background-color: #1b5e20;
         border: 2px solid white;
         border-radius: 10px;
-        padding: 15px;
+        padding: 10px;
         width: 100%;
-        max-width: 800px;
-        max-height: 200px;
+        max-height: 150px; /* Menor altura para dar más espacio a la cancha */
         overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 8px;
     }
 
     @media (min-width: 768px) {
@@ -148,17 +184,21 @@
             width: 250px;
             height: 500px;
             max-height: none;
+            grid-template-columns: 1fr;
         }
     }
 
     .jugador-lista {
-        padding: 8px 12px;
-        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px;
         cursor: pointer;
         border-radius: 5px;
         transition: all 0.2s;
         background-color: rgba(255, 255, 255, 0.1);
         text-align: center;
+        font-size: 14px; /* Texto más grande */
     }
 
     .jugador-lista:hover {
@@ -194,6 +234,8 @@
         cursor: pointer;
         margin-top: 10px;
         transition: background-color 0.3s;
+        width: 100%;
+        max-width: 300px;
     }
 
     .boton-reinicio:hover {
@@ -202,16 +244,9 @@
 
     .contenedor-boton {
         width: 100%;
-        max-width: 800px;
         display: flex;
         justify-content: center;
         margin-top: 10px;
-    }
-
-    @media (min-width: 768px) {
-        .contenedor-boton {
-            max-width: 1100px;
-        }
     }
 </style>
 </head>
@@ -239,6 +274,8 @@
 </div>
 
 <script>
+    // [El código JavaScript permanece exactamente igual que en tu versión anterior]
+    // Solo se han modificado los estilos CSS para mejorar la visualización en móviles
     const nombres = ["Garman", "Max", "Britos", "Faka", "Galo", "Gaspi", "Jacho", "Marito", "Mati P", "Pedrito", "Tate", "Tobi"];
     const listaJugadores = document.getElementById("listaJugadores");
     const cancha = document.getElementById("cancha");
