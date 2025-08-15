@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "public/**/*",
+      "src": "index.html",
       "use": "@vercel/static"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/public/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
