@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Envido FC - Alineación Fútbol 8</title>
+<style>
+    body {
+        background-color: #145a32;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        color: white;
+        margin: 0;
+        min-height: 100vh;
+    }
+
+    .titulo {
+        font-size: clamp(24px, 5vw, 32px);
+        font-weight: bold;
+        margin: 10px 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+
+    .contenedor-principal {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 1200px;
+        gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+        .contenedor-principal {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+        }
+    }
+
+    .contenedor-cancha {
+        width: 100%;
+        max-width: 800px;
+    }
+
+    /* Cancha */
+    .cancha {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 62.5%; /* Proporción 8:5 */
+        background: repeating-linear-gradient(
+            90deg,
+            #2e7d32 0px,
+            #2e7d32 40px,
+            #388e3c 40px,
+            #388e3c 80px
+        );
+        border: 5px solid white;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    /* Elementos de la cancha */
+    .cancha > div {
+        position: absolute;
+    }
+
+    /* Línea central horizontal */
+    .linea-central {
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: white;
+        transform: translateY(-50%);
+    }
+
+    /* Círculo central */
+    .circulo {
+        top: 50%;
+        left: 50%;
+        width: 15%;
+        height: 24%;
+        border: 2px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    /* Área grande */
+    .area {
+        width: 31.25%;
+        height: 24%;
+        border: 2px solid white;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .area.top { top: 0; }
+    .area.bottom { bottom: 0; }
+
+    /* Jugador en cancha */
+    .jugador {
+        position: absolute;
+        text-align: center;
+        cursor: grab;
+        user-select: none;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        touch-action: none;
+    }
+
+    .jugador .icono {
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        border-radius: 50%;
+        border: 2px solid black;
+        margin: 0 auto;
+    }
+
+    .jugador .nombre {
+        margin-top: 2px;
+        font-size: 12px;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+        white-space: nowrap;
+    }
+
+    /* Lista de jugadores */
+    .lista-jugadores {
+        background-color: #1b5e20;
+        border: 2px solid white;
+        border-radius: 10px;
+        padding: 15px;
+        width: 100%;
+        max-width: 800px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    @media (min-width: 768px) {
+        .lista-jugadores {
+            width: 250px;
+            height: 500px;
+            max-height: none;
+        }
+    }
+
+    .jugador-lista {
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.2s;
+        background-color: rgba(255, 255, 255, 0.1);
+        text-align: center;
+    }
+
+    .jugador-lista:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .jugador-lista.en-cancha {
+        opacity: 0.5;
+        pointer-events: none;
+        background-color: transparent;
+    }
+
+    .contador {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.5);
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 5;
+    }
+
+    /* Botón de reinicio */
+    .boton-reinicio {
+        background-color: #d32f2f;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.3s;
+    }
+
+    .boton-reinicio:hover {
+        background-color: #b71c1c;
+    }
+
+    .contenedor-boton {
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    @media (min-width: 768px) {
+        .contenedor-boton {
+            max-width: 1100px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1 class="titulo">REAL ENVIDO FC</h1>
+
+<div class="contenedor-principal">
+    <div class="contenedor-cancha">
+        <!-- Cancha -->
+        <div class="cancha" id="cancha">
+            <div class="linea-central"></div>
+            <div class="circulo"></div>
+            <div class="area top"></div>
+            <div class="area bottom"></div>
+            <div class="contador" id="contador">0/8</div>
+            <!-- Jugadores se agregarán aquí -->
+        </div>
+        <div class="contenedor-boton">
+            <button class="boton-reinicio" id="botonReinicio">Reiniciar Equipo</button>
+        </div>
+    </div>
+
+    <!-- Lista de jugadores -->
+    <div class="lista-jugadores" id="listaJugadores"></div>
+</div>
+
+<script>
+    const nombres = ["Garman", "Max", "Britos", "Faka", "Galo", "Gaspi", "Jacho", "Marito", "Mati P", "Pedrito", "Tate", "Tobi"];
+    const listaJugadores = document.getElementById("listaJugadores");
+    const cancha = document.getElementById("cancha");
+    const contador = document.getElementById("contador");
+    const botonReinicio = document.getElementById("botonReinicio");
+
+    let jugadoresEnCancha = [];
+    let jugadorSeleccionado = null;
+    let offsetX = 0, offsetY = 0;
+    let isTouchDevice = false;
+
+    // Inicializar
+    function init() {
+        isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        renderListaJugadores();
+        actualizarContador();
+        setupEventListeners();
+    }
+
+    function reiniciarEquipo() {
+        jugadoresEnCancha = [];
+        renderCancha();
+        renderListaJugadores();
+        actualizarContador();
+    }
+
+    function actualizarContador() {
+        contador.textContent = `${jugadoresEnCancha.length}/8`;
+    }
+
+    function renderListaJugadores() {
+        listaJugadores.innerHTML = "";
+        nombres.forEach(nombre => {
+            const enCancha = jugadoresEnCancha.some(j => j.nombre === nombre);
+            const div = document.createElement("div");
+            div.classList.add("jugador-lista");
+            if (enCancha) div.classList.add("en-cancha");
+            div.dataset.nombre = nombre;
+            div.textContent = nombre;
+            
+            div.addEventListener("click", () => agregarJugadorACancha(nombre));
+            
+            listaJugadores.appendChild(div);
+        });
+    }
+
+    function encontrarPosicionLibre() {
+        const posicionesIniciales = [
+            {x: 50, y: 90},    // Arquero
+            {x: 30, y: 70},     // Defensa 1
+            {x: 70, y: 70},     // Defensa 2
+            {x: 15, y: 50},     // Medio 1
+            {x: 50, y: 50},     // Medio 2
+            {x: 85, y: 50},     // Medio 3
+            {x: 30, y: 30},     // Delantero 1
+            {x: 70, y: 30}      // Delantero 2
+        ];
+
+        // Primero intentar con las posiciones iniciales
+        for (let i = 0; i < posicionesIniciales.length; i++) {
+            const pos = posicionesIniciales[i];
+            if (i >= jugadoresEnCancha.length) {
+                return pos; // Posición inicial disponible
+            }
+            
+            // Verificar si la posición inicial está ocupada
+            const posicionOcupada = jugadoresEnCancha.some(j => {
+                return Math.abs(j.x - pos.x) < 10 && Math.abs(j.y - pos.y) < 10;
+            });
+            
+            if (!posicionOcupada) {
+                return pos;
+            }
+        }
+
+        // Si todas las posiciones iniciales están ocupadas, buscar una aleatoria
+        let intentos = 0;
+        const maxIntentos = 50;
+        
+        while (intentos < maxIntentos) {
+            const x = 10 + Math.random() * 80; // Entre 10% y 90%
+            const y = 10 + Math.random() * 80; // Entre 10% y 90%
+            
+            const posicionOcupada = jugadoresEnCancha.some(j => {
+                return Math.abs(j.x - x) < 10 && Math.abs(j.y - y) < 10;
+            });
+            
+            if (!posicionOcupada) {
+                return {x: x, y: y};
+            }
+            
+            intentos++;
+        }
+        
+        // Si no se encontró posición libre después de varios intentos, poner en el centro
+        return {x: 50, y: 50};
+    }
+
+    function agregarJugadorACancha(nombre) {
+        if (jugadoresEnCancha.length >= 8) {
+            alert("Máximo 8 jugadores en cancha");
+            return;
+        }
+
+        if (jugadoresEnCancha.some(j => j.nombre === nombre)) {
+            return;
+        }
+
+        // Encontrar posición libre
+        const posicion = encontrarPosicionLibre();
+
+        const jugador = {
+            nombre: nombre,
+            x: posicion.x,
+            y: posicion.y,
+            elemento: null
+        };
+
+        jugadoresEnCancha.push(jugador);
+        renderCancha();
+        renderListaJugadores();
+        actualizarContador();
+    }
+
+    function renderCancha() {
+        cancha.querySelectorAll(".jugador").forEach(j => j.remove());
+        
+        jugadoresEnCancha.forEach(jugador => {
+            const elemento = document.createElement("div");
+            elemento.classList.add("jugador");
+            elemento.style.left = `${jugador.x}%`;
+            elemento.style.top = `${jugador.y}%`;
+            elemento.dataset.nombre = jugador.nombre;
+            elemento.innerHTML = `
+                <div class="icono"></div>
+                <div class="nombre">${jugador.nombre}</div>
+            `;
+            
+            // Guardar referencia al elemento
+            jugador.elemento = elemento;
+            
+            // Eventos para PC
+            elemento.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                startDragPC(e, jugador);
+            });
+            
+            // Eventos para móvil
+            elemento.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                startDragMobile(e, jugador);
+            }, {passive: false});
+            
+            cancha.appendChild(elemento);
+        });
+    }
+
+    /***********************
+     * FUNCIONES PARA PC *
+     ***********************/
+    function startDragPC(e, jugador) {
+        jugadorSeleccionado = jugador;
+        const elemento = jugador.elemento;
+        const rect = elemento.getBoundingClientRect();
+        
+        // Calcular offset correctamente para PC
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        document.addEventListener("mousemove", moveDragPC);
+        document.addEventListener("mouseup", stopDragPC);
+    }
+
+    function moveDragPC(e) {
+        if (!jugadorSeleccionado) return;
+        
+        const canchaRect = cancha.getBoundingClientRect();
+        const x = ((e.clientX - canchaRect.left - offsetX + 20) / canchaRect.width) * 100;
+        const y = ((e.clientY - canchaRect.top - offsetY + 20) / canchaRect.height) * 100;
+        
+        // Limitar movimiento dentro de la cancha
+        const newX = Math.max(3, Math.min(x, 97));
+        const newY = Math.max(3, Math.min(y, 97));
+        
+        jugadorSeleccionado.x = newX;
+        jugadorSeleccionado.y = newY;
+        
+        // Actualizar posición visual inmediatamente
+        if (jugadorSeleccionado.elemento) {
+            jugadorSeleccionado.elemento.style.left = `${newX}%`;
+            jugadorSeleccionado.elemento.style.top = `${newY}%`;
+        }
+    }
+
+    function stopDragPC() {
+        document.removeEventListener("mousemove", moveDragPC);
+        document.removeEventListener("mouseup", stopDragPC);
+        jugadorSeleccionado = null;
+    }
+
+    /***************************
+     * FUNCIONES PARA MÓVIL *
+     ***************************/
+    function startDragMobile(e, jugador) {
+        jugadorSeleccionado = jugador;
+        const canchaRect = cancha.getBoundingClientRect();
+        const touch = e.touches[0];
+        
+        // Calcular offset para móvil
+        offsetX = touch.clientX - canchaRect.left - (jugador.x / 100 * canchaRect.width);
+        offsetY = touch.clientY - canchaRect.top - (jugador.y / 100 * canchaRect.height);
+        
+        document.addEventListener("touchmove", moveDragMobile, {passive: false});
+        document.addEventListener("touchend", stopDragMobile);
+    }
+
+    function moveDragMobile(e) {
+        if (!jugadorSeleccionado) return;
+        e.preventDefault();
+        
+        const canchaRect = cancha.getBoundingClientRect();
+        const touch = e.touches[0];
+        
+        let x = ((touch.clientX - canchaRect.left - offsetX) / canchaRect.width) * 100;
+        let y = ((touch.clientY - canchaRect.top - offsetY) / canchaRect.height) * 100;
+        
+        // Limitar movimiento dentro de la cancha
+        x = Math.max(3, Math.min(x, 97));
+        y = Math.max(3, Math.min(y, 97));
+        
+        jugadorSeleccionado.x = x;
+        jugadorSeleccionado.y = y;
+        
+        if (jugadorSeleccionado.elemento) {
+            jugadorSeleccionado.elemento.style.left = `${x}%`;
+            jugadorSeleccionado.elemento.style.top = `${y}%`;
+        }
+    }
+
+    function stopDragMobile() {
+        document.removeEventListener("touchmove", moveDragMobile);
+        document.removeEventListener("touchend", stopDragMobile);
+        jugadorSeleccionado = null;
+    }
+
+    function quitarJugadorDeCancha(nombre) {
+        jugadoresEnCancha = jugadoresEnCancha.filter(j => j.nombre !== nombre);
+        renderCancha();
+        renderListaJugadores();
+        actualizarContador();
+    }
+
+    function setupEventListeners() {
+        // Botón de reinicio
+        botonReinicio.addEventListener("click", reiniciarEquipo);
+
+        // Para PC - doble click
+        cancha.addEventListener("dblclick", (e) => {
+            const jugadorElement = e.target.closest(".jugador");
+            if (jugadorElement) {
+                const nombre = jugadorElement.dataset.nombre;
+                quitarJugadorDeCancha(nombre);
+            }
+        });
+
+        // Para móvil - doble tap
+        let lastTap = 0;
+        let lastTapElement = null;
+        cancha.addEventListener("touchstart", (e) => {
+            if (e.touches.length === 1) {
+                const currentTime = Date.now();
+                const tapLength = currentTime - lastTap;
+                const jugadorElement = document.elementFromPoint(
+                    e.touches[0].clientX, 
+                    e.touches[0].clientY
+                )?.closest(".jugador");
+                
+                if (jugadorElement && jugadorElement === lastTapElement && tapLength < 300) {
+                    const nombre = jugadorElement.dataset.nombre;
+                    quitarJugadorDeCancha(nombre);
+                    e.preventDefault();
+                }
+                
+                lastTap = currentTime;
+                lastTapElement = jugadorElement;
+            }
+        }, {passive: false});
+    }
+
+    init();
+</script>
+
+</body>
+</html>
